@@ -88,30 +88,28 @@ jobs:
         if: ${{ runner.os == 'Windows' && steps.cache-deps.outputs.cache-hit != 'true' }}
         run: |
             $CWD=$(Get-Location)
-            mkdir -p ./build_deps/wheels
-            pip3 install wheel
-            cd e3-core && python3 ./setup.py -q bdist_wheel --python-tag py38 -d $CWD/build_deps/wheels &&
-            cd  .. &&
-            cd e3-testsuite && python3 ./setup.py -q bdist_wheel --python-tag py38 -d $CWD/build_deps/wheels
+            python3 -m pip install wheel
+            cd e3-core && python3 -m pip install . && cd ..
+            cd e3-testsuite && python3 -m pip install . && cd ..
       - name: Install e3-testsuite (Unix)
         if: ${{ runner.os != 'Windows' && steps.cache-deps.outputs.cache-hit != 'true' }}
         run: |
             CWD=$(pwd)
             mkdir -p ./build_deps/wheels
             pip3 install wheel
-            (cd e3-core && python3 ./setup.py -q bdist_wheel --python-tag py38 -d $CWD/build_deps/wheels)
-            (cd e3-testsuite && python3 ./setup.py -q bdist_wheel --python-tag py38 -d $CWD/build_deps/wheels)
-      - name: Create python environment (Unix)
-        if: ${{ runner.os != 'Windows' }}
-        run: |
-          pip install ./build_deps/wheels/*.whl &&
-          echo "$(pwd)/build_deps/py3-env/bin" >> ${GITHUB_PATH}
-      - name: Create python environment (Windows)
-        if: ${{ runner.os == 'Windows' }}
-        run: |
-          $files = Get-Item ./build_deps/wheels/*.whl
-          pip install $files &&
-          echo "$(Get-Location)/build_deps/py3-env;$(Get-Location)/build_deps/py3-env/Scripts" >> $GITHUB_PATH
+            (cd e3-core && python3 -m pip install .)
+            (cd e3-testsuite && python3 -m pip install .)
+            #- name: Create python environment (Unix)
+            #  if: ${{ runner.os != 'Windows' }}
+            #  run: |
+            #    pip install ./build_deps/wheels/*.whl &&
+            #    echo "$(pwd)/build_deps/py3-env/bin" >> ${GITHUB_PATH}
+            #- name: Create python environment (Windows)
+            #  if: ${{ runner.os == 'Windows' }}
+            #  run: |
+            #    $files = Get-Item ./build_deps/wheels/*.whl
+            #    pip install $files &&
+            #    echo "$(Get-Location)/build_deps/py3-env;$(Get-Location)/build_deps/py3-env/Scripts" >> $GITHUB_PATH
       # Build, Install and test gnatcoll in DEBUG mode
       - name: Build GNATCOLL
         run: make BUILD=DEBUG
